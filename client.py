@@ -47,7 +47,7 @@ class DHCPDiscover:
         packet += b'\x00' * 67  #Server host name not given
         packet += b'\x00' * 125 #Boot file name not given
         packet += b'\x63\x82\x53\x63'   #Magic cookie: DHCP
-        packet += b'\x35\x01\x01' # Message Type(code=53 len=1 type=1(DHCPDISCOVER))
+        packet += b'\x35\x01\x01' # Message Type(code=53 len=1 type=1(DHCP_DISCOVER))
         return bytes(packet)
     def unPack(self,data):
         mac = data[28:34]
@@ -66,15 +66,14 @@ class DHCPOffer:
             self.offerIP = '.'.join(map(lambda x:str(x), data[16:20]))
             self.nextServerIP = '.'.join(map(lambda x:str(x), data[20:24]))
             self.dhcpServer = '.'.join(map(lambda x:str(x), data[263:267]))
-            print("Offer IP: " + '.'.join(map(lambda x:str(x), data[16:20])))
-            print("Next Server IP: " + '.'.join(map(lambda x:str(x), data[20:24])))
-            print("Subnet Mask:"  + '.'.join(map(lambda x:str(x), data[245:249])))
-            print("Router:"  + '.'.join(map(lambda x:str(x), data[251:255])))
-            print("lease Time:"  + str(struct.unpack('!i',data[257:261])))
-            print("DHCP Server:"  + '.'.join(map(lambda x:str(x), data[263:267])))
-            print("DNS server:"  + '.'.join(map(lambda x:str(x), data[269:273])))
-            print("DNS server:"  + '.'.join(map(lambda x:str(x), data[275:279])))
-            print("DNS server:"  + '.'.join(map(lambda x:str(x), data[281:285])))
+            
+            key = ['Offer IP', 'Next Server IP', 'Subnet Mask', 'Router', 'DHCP Server', 'DNS server', 'DNS server', 'DNS server']
+            val = [data[16:20], data[20:24], data[245:249], data[251:255], data[263:267], data[269:273], data[275:279], data[281:285]]
+            
+            for i in range (0, len(val), 1):
+                print(' {0:20s} : {1:15s}'.format(key[i], '.'.join(map(lambda x:str(x),val[i]))))
+            print(" Lease Time           :"  + str(struct.unpack('!i',data[257:261])))
+
 class DHCPRequest:
     def __init__(self,xid,mac,nextServerIP,dhcpServer,offerIP):
         self.xid = xid
@@ -103,9 +102,6 @@ class DHCPRequest:
         packet[44:236]= b'\x00' * 192
         
         packet[236:240] =  b'\x63\x82\x53\x63' #Magic Cookie
-        #packet[240] = 53 #xid
-        #packet[241] = 1
-        #packet[242] = 1 #dhcpdiscover
         packet[243:246] =  b'\x35\x01\x03' # Message Type(code=53 len=1 type=3(DHCPRequest))
         packet[246:248] = b'\x32\x04'
         packet[248:252] = inet_aton(self.offerIP)
@@ -145,7 +141,7 @@ if __name__ == '__main__':
     try:
         data = s.recv(1024)
         offerPacket = DHCPOffer(data, discoverPacket.xid)
-        requestPacket = DHCPRequest(discoverPacket.xid,discoverPacket.mac,offerPacket.nextServerIP,offerPacket.dhcpServer,offerPacket.offerIP)
+        requestPacket = DHCPRequest(discoverPacket.xid, discoverPacket.mac, offerPacket.nextServerIP, offerPacket.dhcpServer, offerPacket.offerIP)
         s.sendto(requestPacket.sendPacket(),('<broadcast>',67))
         data = s.recv(1024)
         ackPacket = DHCPAck(data,discoverPacket.xid)
