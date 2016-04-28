@@ -28,7 +28,7 @@ class DHCPDiscover:
             t = randint(0, 255)
             self.xid += struct.pack('!B', t)
     def sendPacket(self):
-        macb = randomMAC()
+        macb = self.mac =randomMAC()
         packet = b''
         packet += b'\x01'   #Message type: Boot Request (1)
         packet += b'\x01'   #Hardware type: Ethernet
@@ -122,7 +122,22 @@ class DHCPAck:
         if self.data[4:8] == self.xid :
             #print("xid: "+':'.join(map(lambda x:str(x), data[4:8])))
             #print(binascii.hexlify(self.xid))
-            print(' close')
+            
+            key = ['opcode', 'htype', 'hlen', 'hops', 'TranscationID', 'secs', 'flags', 'ciaddr', 'yiaddr', 'siaddr', 'giaddr', 'client MAC address','Option(53)']
+            val = [data[0], data[1], data[2], data[3], data[4:8], data[8:10], data[10:12], data[12:16], data[16:20], data[20:24], data[24:28], data[28:34], data[243:246]]
+            
+            for i in range (0, 4, 1):
+                print(' {0:20s} : {1:15s}'.format(key[i], str(val[i])))
+                
+            showID = ''.join(map(lambda x: "%02x" % x, data[4:8]))
+            print (' {0:20s} : 0x{1:15s}'.format(key[4], showID))
+            
+            for i in range (5, 11, 1):
+                print(' {0:20s} : {1:15s}'.format(key[i], '.'.join(map(lambda x:str(x), val[i]))))
+            showMAC = ':'.join(map(lambda x: "%02x" % x, data[28:34]))
+            print (' {0:20s} : {1:15s}'.format(key[11], showMAC))
+            
+            print('\n close connection')
 if __name__ == '__main__':
     s = socket(AF_INET, SOCK_DGRAM)
     s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1) 
