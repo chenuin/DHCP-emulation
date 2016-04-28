@@ -50,7 +50,7 @@ class DHCPOffer:
         #print(self.mac)
     def sendPacket(self):
         packet = b''
-        packet += b'\x02'   #Message type: Boot Request (1)
+        packet += b'\x02'   #Message type: Boot Reply (2)
         packet += b'\x01'   #Hardware type: Ethernet
         packet += b'\x06'   #Hardware address length: 6
         packet += b'\x00'   #Hops: 0
@@ -93,6 +93,8 @@ class DHCPRequest:
         print('********** Receive DHCP Request ***********')
         self.xid = data[4:8]
         self.mac = data[28:34]
+        print(' success!\n')
+        print('Wait for another client...')
         
         #print (self.xid)
         #print (self.mac)
@@ -112,7 +114,7 @@ class DHCPAck:
         self.DNS3 = DNS3
     def sendPacket(self):
         packet = b''
-        packet += b'\x02'   #Message type: Boot Request (1)
+        packet += b'\x02'   #Message type: Boot Reply (2)
         packet += b'\x01'   #Hardware type: Ethernet
         packet += b'\x06'   #Hardware address length: 6
         packet += b'\x00'   #Hops: 0
