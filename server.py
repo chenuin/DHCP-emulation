@@ -120,7 +120,7 @@ class DHCPAck:
         packet += b'\x00'   #Hops: 0
         packet += self.xid
         packet += b'\x00\x00'    #Seconds elapsed: 0
-        packet += b'\x80\x00'    #Bootp flags: 0x8000 (Broadcast) + reserved flags
+        packet += b'\x00\x00'    #Bootp flags: 0x8000 (Broadcast) + reserved flags
         packet += inet_aton('0.0.0.0')
         packet += inet_aton(self.offerIP)
         packet += inet_aton(self.nextServerIP)
