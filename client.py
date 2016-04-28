@@ -83,34 +83,34 @@ class DHCPRequest:
         self.dhcpServer = dhcpServer
         self.offerIP = offerIP
     def sendPacket(self):
-        packet = b''
-        packet += b'\x02'   #Message type: Boot Request (1)
-        packet += b'\x01'   #Hardware type: Ethernet
-        packet += b'\x06'   #Hardware address length: 6
-        packet += b'\x00'   #Hops: 0
+        packet = bytearray(246)
+        packet[0] = 1 #self.message_type
+        packet[1] = 1 #self.hardware_type
+        packet[2] = 6 #self.hardware_address_length
+        packet[3] = 0 #self.hops
 
-        packet += self.xid #xid
-        packet += b'\x00\x00' #SECS
-        packet += b'\x00\x00' #FLAGS
+        packet[4:8] = self.xid #xid
+        packet[ 8:10] = b'\x00\x00' #SECS
+        packet[10:12] = b'\x00\x00' #FLAGS
 
-        packet += inet_aton('0.0.0.0') #client_ip_address
-        packet += inet_aton('0.0.0.0') #your_ip_address
-        packet += inet_aton(self.nextServerIP) #next_server_ip_address
-        packet += inet_aton('0.0.0.0') #relay_agent_ip_address
+        packet[12:16] = inet_aton('0.0.0.0') #client_ip_address
+        packet[16:20] = inet_aton('0.0.0.0') #your_ip_address
+        packet[20:24] = inet_aton(self.nextServerIP) #next_server_ip_address
+        packet[24:28] = inet_aton('0.0.0.0') #relay_agent_ip_address
 
-        packet += self.mac
-        packet += b'\x00' * 10
-        packet += b'\x00' * 192
+        packet[28:35] = self.mac
+        packet[35:44] = b'\x00' * 10
+        packet[44:236]= b'\x00' * 192
         
-        packet += b'\x63\x82\x53\x63' #Magic Cookie
+        packet[236:240] =  b'\x63\x82\x53\x63' #Magic Cookie
         #packet[240] = 53 #xid
         #packet[241] = 1
         #packet[242] = 1 #dhcpdiscover
-        packet += b'\x35\x01\x03' # Message Type(code=53 len=1 type=3(DHCPRequest))
-        packet += b'\x32\x04'
-        packet += inet_aton(self.offerIP)
-        packet += b'\x36\x04'
-        packet += inet_aton(self.dhcpServer)
+        packet[243:246] =  b'\x35\x01\x03' # Message Type(code=53 len=1 type=3(DHCPRequest))
+        packet[246:248] = b'\x32\x04'
+        packet[248:252] = inet_aton(self.offerIP)
+        packet[252:254] = b'\x36\x04'
+        packet[254:258] = inet_aton(self.dhcpServer)
         packet += b'\xff'
         return bytes(packet)
 class DHCPAck:
