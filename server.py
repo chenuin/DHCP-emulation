@@ -23,10 +23,11 @@ class DHCPDiscover:
         print('********** Receive DHCP Discover **********')
         self.xid = self.data[4:8]
         self.mac = self.data[28:34]
-
+		
+        xid = ''.join(map(lambda x: "%02x" % x, data[4:8]))
         mac = ':'.join(map(lambda x: "%02x" % x, data[28:34]))
         key = ['TransactionID', 'macAddress']
-        val = ['1', mac]
+        val = [xid, mac]
 
         for i in range (0, len(key), 1):
             print(' {0:20s} : {1:15s}'.format(key[i], val[i]))
@@ -89,7 +90,7 @@ class DHCPRequest:
 	    self.data = data
 	    self.unPack()
 	def unPack(self):
-	    print('********** Receive DHCP Request **********')
+	    print('********** Receive DHCP Request ***********')
 	    self.xid = data[4:8]
 	    self.mac = data[28:34]
 	    
