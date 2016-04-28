@@ -52,12 +52,36 @@ class DHCPDiscover:
         return bytes(packet)
 
 class DHCPOffer:
-    def __init__(self, data):
+    def __init__(self, data, xid):
+        self.xid = xid
+        self.op = data[0]
+        self.htype = data[1]
+        self.hlen = data[2]
+        self.hops = data[3]
+        self.mac = data[28:34]
+        self.offerIP = data[16:20]
+        self.nextServerIP = data[20:24]
+        self.server = data[263:267]
         self.data = data
-        self.unPack()
+        if self.xid == data[4:8]:
+            self.unPack()
     def unPack(self):
         print('********** Receive DHCP Offer **********')
-        
+        key = ['opcode', 'htype', 'hlen', 'hops']
+        val = [self.op, self.htype, self.hlen, self.hops]
+        for i in range (0, len(key), 1):
+            print(' {0:20s} : {1:15x}'.format(key[i], val[i]))
+
+class DHCPRequest:
+    def __init__(self, data):
+        self.xid = data.xid
+        self.mac = data.mac
+        self.offerIP = data.offerIP
+        self.nextServerIP = data.nextServerIP
+        self.server = data.server
+    def sendPacket(self):
+        packet = b''
+        return bytes(packet)
 
 if __name__ == "__main__":
     #define the socket
@@ -76,6 +100,12 @@ if __name__ == "__main__":
     s.sendto(discoverPacket.sendPacket(), ('<broadcast>', 67))
     
     s.settimeout(20)
+    try:
+	    data = s.recv(1024)
+	    offerPacket = DHCPOffer(data, discoverPacket.xid)
+	    requestPacket = DHCPRequest(offerPacket)
+    except timeout as msg:
+        stderr.write("%s\n" % msg)
+    s.close()
     
-    s.settimeout(10)
-	
+    exit()
